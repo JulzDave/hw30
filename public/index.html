@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JulShop</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+<style>
+
+  body{
+    background: linear-gradient(90deg, mediumturquoise, black);
+    font-family: fantasy;
+  }
+
+  #details {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 60%;
+  }
+
+  #details li {
+    margin: 0 3px 3px 3px;
+    padding: 0.4em;
+    padding-left: 1.5em;
+    font-size: 1.4em;
+    height: 18px;
+  }
+
+  #details li span {
+    position: absolute;
+    margin-left: -1.3em;
+  }
+
+</style>
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+</head>
+<body>
+    <h1>Buy a TV &#x1f4fa;</h1>
+  <span>Firstname:<input type="text" id="item1" name="firstname" onblur="addToDetails(this)" /></span><br/><br/>
+  <span>Lastname:<input disabled type="text" id="item2" name="lastname" onblur="addToDetails(this)" /></span><br/><br/>
+  <span>Inches:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input disabled type="number" id="item3" name="inches" onblur="addToDetails(this)" /></span><br/><br/>
+  <span>Model:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input disabled type="text" id="item4" name="model" onblur="addToDetails(this)" /></span>
+  <form action="/thank"><br/>
+  <input type="submit" value="SEND (mock btn)">
+  </form>
+  <ul id="details"></ul>
+  <script>
+  var store = Redux.createStore(tvCustomerReducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
+  
+  store.subscribe(drawCustomerDetails); 
+
+
+function drawCustomerDetails()
+{
+    //console.log(store.getState());
+   
+    $("#details").empty();
+    var htmlText='';
+    let allItemsArray= store.getState();
+    
+    allItemsArray.forEach(item => {
+        htmlText+=` <li>${item}</li>   `
+    });
+    $("#details").html(htmlText); 
+
+}
+
+  function addToDetails(e) {
+    let fieldToAdd = e.value;
+    if(e.value == ""){
+      return;
+    }
+    var thisItem = parseInt($(e).attr("id").split("m")[1]);
+    var nextItem = parseInt($(e).attr("id").split("m")[1])+1;
+    $("#item"+nextItem).attr("disabled", false);
+    $("#item"+thisItem).attr("disabled", true);
+    store.dispatch({
+      type:"ADD_FIELD",
+      payload:fieldToAdd
+    });
+    
+   function sendForm()
+  {
+    fetch('http://localhost:3000/newbuyer'+e.id.split("m")[1], {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(store.getState())
+      }).then(r=>r.json())
+      .then(data=>
+        {
+            console.log(data); 
+        })
+        }
+  sendForm()
+
+//     $.post( "/newbuyer"+e.id.split("m")[1], function( data ) {
+     
+//       alert( "Data Loaded: " + data );
+// });
+    }
+  
+
+    function tvCustomerReducer(state, action) {
+
+       
+if (typeof state === 'undefined') {
+  return []
+}
+
+//copy the array to new array obj
+let newState=state.slice(0); 
+
+switch (action.type) { 
+  case 'ADD_FIELD': 
+    newState.push(action.payload); 
+    return newState;
+}
+}
+
+  </script>
+  
+</body>
+</html>
